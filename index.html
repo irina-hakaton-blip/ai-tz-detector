@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI-TZ Detector | Анализ ТЗ по 44-ФЗ в контуре ЕМТС</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-logo">ТЗ</div>
+    <div>
+      <h1>AI-TZ Detector • Антимонопольный аудит 44-ФЗ</h1>
+      <span>Защищённый шлюз проверки закупочной документации</span>
+    </div>
+  </div>
+  <div class="status-bar">
+    <span class="badge badge-secure"><span class="dot"></span>Контур ЕМТС: Изолирован</span>
+    <span class="badge badge-info" id="header-model-badge">LLM Gateway: Local Qwen-2.5-32B (On-Premise)</span>
+  </div>
+</header>
+
+<div class="container">
+  <div>
+    <div class="card">
+      <div class="card-title">1. Выбор контура обработки данных (LLM Gateway)</div>
+      <div class="mode-switch">
+        <div class="mode-option active" id="mode-local">
+          <strong>🔒 Закрытый контур ЕМТС (Local)</strong>
+          <small>Локальный сервер инференса (vLLM / Ollama). Выход в интернет отключён.</small>
+        </div>
+        <div class="mode-option" id="mode-cloud">
+          <strong>🛡️ DMZ-шлюз + GigaChat API</strong>
+          <small>Работа через белый список ЕМТС + обязательное PII-маскирование реквизитов.</small>
+        </div>
+      </div>
+      <div class="security-note" id="security-note">
+        <span>✅</span>
+        <span><strong>Режим Air-Gapped:</strong> Ни один байт ТЗ не покидает периметр локальной сети организации.</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2. Загрузка технического задания</div>
+
+      <div class="dropzone" id="dropzone">
+        <p>📄 Перетащите файл ТЗ сюда или нажмите для выбора</p>
+        <span id="fileNameLabel">Поддерживаются .DOCX (включая таблицы), .PDF, .XLSX, .TXT без ограничения 3000 символов</span>
+        <input type="file" id="fileInput" hidden accept=".txt,.docx,.pdf,.xlsx" />
+      </div>
+
+    <div class="toolbar">
+        <label for="tzText">Текст документа (полный разбор абзацев и таблиц):</label>
+        <div class="demo-buttons">
+            <button type="button" class="btn-ghost btn-ghost-danger" id="demoBadBtn">⚠️ ТЗ с нарушениями</button>
+            <button type="button" class="btn-ghost btn-ghost-ok" id="demoGoodBtn">✅ Эталонное ТЗ (без нарушений)</button>
+        </div>
+    </div>
+
+
+      <textarea id="tzText" placeholder="Вставьте сюда текст технического задания или нажмите «Загрузить тестовое ТЗ с нарушениями»..."></textarea>
+
+      <div class="actions">
+        <button type="button" class="btn-primary" id="analyzeBtn">🚀 Запустить проверку по 44-ФЗ</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">3. Конвейер анализа (Backend Worker)</div>
+      <div class="pipeline">
+        <div class="step" id="step-1">
+          <span><strong>Слой 1.</strong> Парсер структуры и таблиц спецификации</span>
+          <span class="step-status" id="status-1">Ожидание</span>
+        </div>
+        <div class="step" id="step-2">
+          <span><strong>Слой 2.</strong> Rule-Engine (бренды, «или эквивалент», ГОСТы)</span>
+          <span class="step-status" id="status-2">Ожидание</span>
+        </div>
+        <div class="step" id="step-3">
+          <span><strong>Слой 3.</strong> Локальный RAG (поиск по базе 44-ФЗ и КТРУ)</span>
+          <span class="step-status" id="status-3">Ожидание</span>
+        </div>
+        <div class="step" id="step-4">
+          <span><strong>Слой 4.</strong> PII-маскирование и семантический LLM-аудит</span>
+          <span class="step-status" id="status-4">Ожидание</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card result-card">
+      <div class="card-title">
+        <span>Результат проверки и выявленные риски</span>
+        <span class="audit-time" id="audit-time"></span>
+      </div>
+
+      <div id="emptyState" class="empty-state">
+        <p class="empty-icon">🛡️</p>
+        <p><strong>Документ ещё не проверен</strong></p>
+        <p class="empty-desc">Загрузите демо-ТЗ слева и нажмите «Запустить проверку», чтобы увидеть работу детектора.</p>
+      </div>
+
+            <div id="resultContent" style="display: none;">
+        <div id="reportBody"></div>
+        <div class="pii-log" id="piiLogBox"></div>
+        <button type="button" class="btn-download" id="downloadBtn">📥 Скачать официальный отчёт проверки (.TXT)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
